@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.dart_tool/
+.packages
+build/
+.pub/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Gradle
+.gradle/
+local.properties
+
+# Android build
+**/build/
+**/outputs/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+
+# Signing (DO NOT commit real keys)
+*.pem
+*.jks
+*.keystore
+*.p12
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Generated
+GeneratedPluginRegistrant.java
+
+# Watch app build artifacts
+watch-app/dist/
+watch-app/build/

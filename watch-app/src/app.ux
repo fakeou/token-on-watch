@@ -1,0 +1,21 @@
+<template>
+  <div>
+    <slot></slot>
+  </div>
+</template>
+
+<script>
+export default {
+  data: {
+    // 全局共享数据
+  },
+
+  onCreate() {
+    console.log('Token Monitor App created')
+  },
+
+  onDestroy() {
+    console.log('Token Monitor App destroyed')
+  }
+}
+</script>

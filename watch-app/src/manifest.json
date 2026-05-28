@@ -1,0 +1,38 @@
+{
+  "package": "com.example.tokenmonitor",
+  "name": "Token Monitor",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minAPILevel": 1,
+  "icon": "/common/icon.png",
+  "features": [
+    { "name": "system.interconnect" },
+    { "name": "system.storage" }
+  ],
+  "permissions": [],
+  "config": {
+    "logLevel": "debug",
+    "designWidth": 480
+  },
+  "router": {
+    "entry": "index",
+    "pages": {
+      "index": {
+        "component": "index",
+        "path": "/"
+      }
+    }
+  },
+  "display": {
+    "backgroundColor": "#1A1A1A",
+    "titleBar": false,
+    "menu": false,
+    "fullScreen": true,
+    "pages": {
+      "index": {
+        "titleBar": false
+      }
+    }
+  },
+  "deviceTypeList": ["watch"]
+}

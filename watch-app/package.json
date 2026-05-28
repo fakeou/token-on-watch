@@ -1,0 +1,16 @@
+{
+  "name": "token-monitor-watch",
+  "version": "1.0.0",
+  "description": "Token Monitor - VelaJS watch app for AI platform token usage",
+  "scripts": {
+    "start": "aiot start",
+    "build": "aiot build",
+    "watch": "aiot watch",
+    "server": "aiot server",
+    "emulator": "aiot emulator"
+  },
+  "devDependencies": {
+    "aiot-toolkit": "^2.0.5"
+  },
+  "dependencies": {}
+}

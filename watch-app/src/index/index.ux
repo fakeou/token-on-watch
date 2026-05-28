@@ -1,0 +1,249 @@
+<template>
+  <div class="page">
+    <!-- 顶部状态栏 -->
+    <div class="top-bar">
+      <div class="status-left">
+        <div class="conn-dot" style="background-color: {{connected ? '#66BB6A' : '#EF5350'}}"></div>
+        <text class="conn-text">{{connected ? '已连接' : '未连接'}}</text>
+      </div>
+      <text class="update-text">{{lastUpdateTime}}</text>
+      <div class="refresh-btn" onclick="onRefresh">
+        <text class="refresh-icon">↻</text>
+      </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div class="center-container" if="{{loading && sources.length === 0}}">
+      <text class="center-text">正在加载...</text>
+    </div>
+
+    <!-- 断连状态 -->
+    <div class="center-container" if="{{!connected && !loading}}">
+      <text class="center-icon">📡</text>
+      <text class="center-title">未连接手机</text>
+      <text class="center-desc">请确保手机 App 已打开</text>
+      <div class="retry-btn" onclick="onRetryConnect">
+        <text class="retry-text">重新连接</text>
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="center-container" if="{{connected && !loading && sources.length === 0}}">
+      <text class="center-icon">📊</text>
+      <text class="center-title">暂无数据</text>
+      <text class="center-desc">请在手机端添加 API 源</text>
+    </div>
+
+    <!-- ===== Cover Flow 卡片列表 ===== -->
+    <div class="coverflow" if="{{sources.length > 0}}" onswipe="onSwipe">
+
+      <!-- 上方卡片（缩小） -->
+      <div class="slot-above" if="{{aboveSource}}" onclick="onTapAbove">
+        <token-card data="{{aboveSource}}" is-focused="{{false}}"></token-card>
+      </div>
+
+      <!-- 中间卡片（聚焦） -->
+      <div class="slot-center">
+        <token-card data="{{currentSource}}" is-focused="{{true}}"></token-card>
+      </div>
+
+      <!-- 下方卡片（缩小） -->
+      <div class="slot-below" if="{{belowSource}}" onclick="onTapBelow">
+        <token-card data="{{belowSource}}" is-focused="{{false}}"></token-card>
+      </div>
+    </div>
+
+    <!-- 底部指示器 -->
+    <div class="indicators" if="{{sources.length > 1}}">
+      <div class="dot {{currentIndex === $idx ? 'dot-active' : ''}}"
+           for="{{sources}}"
+           style="background-color: {{currentIndex === $idx ? '#4FC3F7' : '#555555'}}">
+      </div>
+    </div>
+  </div>
+</template>
+
+<style src="./index.css"></style>
+
+<script>
+import router from '@system.router'
+import connector from '../common/connector'
+import cache from '../common/cache'
+import { TokenData, createTokenDataList } from '../common/models'
+
+const CACHE_KEY = 'sources_data'
+
+export default {
+  data: {
+    connected: false,
+    loading: false,
+    sources: [],
+    currentIndex: 0,
+    lastUpdateTime: '未更新'
+  },
+
+  computed: {
+    currentSource() {
+      if (!this.sources.length) return null
+      return this.sources[this.currentIndex] || null
+    },
+    aboveSource() {
+      if (this.sources.length <= 1) return null
+      const idx = this.currentIndex - 1
+      return idx >= 0 ? this.sources[idx] : null
+    },
+    belowSource() {
+      if (this.sources.length <= 1) return null
+      const idx = this.currentIndex + 1
+      return idx < this.sources.length ? this.sources[idx] : null
+    }
+  },
+
+  onInit() {
+    console.log('[Index] onInit')
+    this._setupConnector()
+    this._loadCachedData()
+  },
+
+  onReady() {
+    console.log('[Index] onReady')
+    connector.connect()
+  },
+
+  onShow() {
+    console.log('[Index] onShow')
+  },
+
+  onDestroy() {
+    console.log('[Index] onDestroy')
+  },
+
+  /**
+   * 设置通信回调
+   */
+  _setupConnector() {
+    connector.onConnectionChange((connected) => {
+      this.connected = connected
+      if (connected) {
+        this.onRefresh()
+      }
+    })
+
+    connector.onMessage((data) => {
+      if (data.action === 'response' || data.action === 'push') {
+        this._handleTokenData(data.data)
+      }
+    })
+  },
+
+  /**
+   * 加载缓存
+   */
+  _loadCachedData() {
+    cache.get(CACHE_KEY).then(result => {
+      if (result.data && result.data.length > 0) {
+        this.sources = createTokenDataList(result.data)
+        this.lastUpdateTime = this._formatTime(result.timestamp)
+        this._clampIndex()
+      }
+    }).catch(e => {
+      console.error('[Index] Cache load error:', e)
+    })
+  },
+
+  /**
+   * 处理 token 数据
+   */
+  _handleTokenData(payload) {
+    if (!payload || !Array.isArray(payload)) return
+    this.sources = createTokenDataList(payload)
+    this.lastUpdateTime = this._formatTime(Date.now())
+    this.loading = false
+    this._clampIndex()
+    cache.set(CACHE_KEY, payload).catch(() => {})
+  },
+
+  /**
+   * 索引边界修正
+   */
+  _clampIndex() {
+    if (!this.sources.length) {
+      this.currentIndex = 0
+    } else if (this.currentIndex >= this.sources.length) {
+      this.currentIndex = this.sources.length - 1
+    }
+  },
+
+  /**
+   * 滑动手势处理
+   */
+  onSwipe(evt) {
+    const direction = evt.direction
+    if (direction === 'up') {
+      this._scrollDown()
+    } else if (direction === 'down') {
+      this._scrollUp()
+    }
+  },
+
+  onTapAbove() {
+    this._scrollUp()
+  },
+
+  onTapBelow() {
+    this._scrollDown()
+  },
+
+  _scrollUp() {
+    if (this.currentIndex > 0) {
+      this.currentIndex--
+    }
+  },
+
+  _scrollDown() {
+    if (this.currentIndex < this.sources.length - 1) {
+      this.currentIndex++
+    }
+  },
+
+  /**
+   * 刷新
+   */
+  onRefresh() {
+    if (this.loading) return
+    this.loading = true
+    this.connected = connector.checkConnection()
+    if (!this.connected) {
+      this.loading = false
+      return
+    }
+    connector.query([]).catch(e => {
+      console.error('[Index] Refresh error:', e)
+      this.loading = false
+    })
+  },
+
+  /**
+   * 重试连接
+   */
+  onRetryConnect() {
+    connector.connect()
+  },
+
+  /**
+   * 时间格式化
+   */
+  _formatTime(timestamp) {
+    if (!timestamp) return '未知'
+    const diff = Date.now() - timestamp
+    if (diff < 0) return '刚刚'
+    const secs = Math.floor(diff / 1000)
+    if (secs < 60) return '刚刚'
+    const mins = Math.floor(secs / 60)
+    if (mins < 60) return mins + '分钟前'
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return hrs + '小时前'
+    return Math.floor(hrs / 24) + '天前'
+  }
+}
+</script>

@@ -1,0 +1,337 @@
+<template>
+  <!-- Token 卡片组件 - 一卡展示所有信息 -->
+  <div class="token-card {{isFocused ? 'focused' : 'unfocused'}}">
+
+    <!-- 顶部状态条 -->
+    <div class="status-bar-top" style="background-color: {{statusColor}}"></div>
+
+    <!-- 头部：图标 + 名称 + 状态 -->
+    <div class="card-header">
+      <text class="platform-icon">{{icon}}</text>
+      <text class="platform-name">{{name}}</text>
+      <div class="status-dot" style="background-color: {{statusColor}}"></div>
+    </div>
+
+    <!-- ===== Token 用量模式 ===== -->
+    <div class="card-body" if="{{displayMode === 'token_usage'}}">
+      <!-- 大字百分比 -->
+      <text class="big-percent" style="color: {{statusColor}}">{{usagePercent}}%</text>
+      <!-- 进度条 -->
+      <div class="progress-bg">
+        <div class="progress-fill" style="width: {{usagePercent}}%; background-color: {{statusColor}}"></div>
+      </div>
+      <!-- 用量三栏 -->
+      <div class="usage-row">
+        <div class="usage-item">
+          <text class="usage-label">已用</text>
+          <text class="usage-value">{{tokensUsedFormatted}}</text>
+        </div>
+        <div class="usage-item">
+          <text class="usage-label">剩余</text>
+          <text class="usage-value" style="color: {{statusColor}}">{{tokensRemainingFormatted}}</text>
+        </div>
+        <div class="usage-item">
+          <text class="usage-label">总量</text>
+          <text class="usage-value">{{tokensLimitFormatted}}</text>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 货币余额模式 ===== -->
+    <div class="card-body" if="{{displayMode === 'balance'}}">
+      <text class="big-balance" style="color: {{statusColor}}">{{balanceText}}</text>
+      <text class="balance-label-text">账户余额</text>
+      <!-- 如有 Token 数据也展示 -->
+      <div class="progress-bg" if="{{tokensLimit > 0}}">
+        <div class="progress-fill" style="width: {{usagePercent}}%; background-color: {{statusColor}}"></div>
+      </div>
+      <div class="usage-row" if="{{tokensLimit > 0}}">
+        <div class="usage-item">
+          <text class="usage-label">已用</text>
+          <text class="usage-value">{{tokensUsedFormatted}}</text>
+        </div>
+        <div class="usage-item">
+          <text class="usage-label">总量</text>
+          <text class="usage-value">{{tokensLimitFormatted}}</text>
+        </div>
+      </div>
+      <!-- 计费周期 -->
+      <text class="period-text" if="{{periodText}}">周期: {{periodText}}</text>
+    </div>
+
+    <!-- ===== 限额窗口模式 (Sub2API) ===== -->
+    <div class="card-body" if="{{displayMode === 'quota_window'}}">
+      <!-- 大字百分比（月度） -->
+      <text class="big-percent" style="color: {{statusColor}}">{{monthlyPercent}}%</text>
+      <text class="quota-subtitle">月度使用率</text>
+
+      <!-- 日限额 -->
+      <div class="quota-item" if="{{hasDaily}}">
+        <text class="quota-label">日</text>
+        <div class="quota-bar-bg">
+          <div class="quota-bar-fill" style="width: {{dailyPercent}}%; background-color: {{statusColor}}"></div>
+        </div>
+        <text class="quota-pct">{{dailyPercent}}%</text>
+      </div>
+
+      <!-- 周限额 -->
+      <div class="quota-item" if="{{hasWeekly}}">
+        <text class="quota-label">周</text>
+        <div class="quota-bar-bg">
+          <div class="quota-bar-fill" style="width: {{weeklyPercent}}%; background-color: {{statusColor}}"></div>
+        </div>
+        <text class="quota-pct">{{weeklyPercent}}%</text>
+      </div>
+
+      <!-- 月限额 -->
+      <div class="quota-item" if="{{hasMonthly}}">
+        <text class="quota-label">月</text>
+        <div class="quota-bar-bg">
+          <div class="quota-bar-fill" style="width: {{monthlyPercent}}%; background-color: {{statusColor}}"></div>
+        </div>
+        <text class="quota-pct">{{monthlyPercent}}%</text>
+      </div>
+    </div>
+
+    <!-- 底部：更新时间 -->
+    <div class="card-footer">
+      <text class="status-label" style="color: {{statusColor}}">{{statusText}}</text>
+      <text class="update-time">{{updatedAtFormatted}}</text>
+    </div>
+  </div>
+</template>
+
+<style>
+.token-card {
+  width: 400px;
+  background-color: #222222;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.token-card.focused {
+  border-width: 2px;
+  border-color: #4FC3F7;
+}
+
+.token-card.unfocused {
+  border-width: 1px;
+  border-color: #333333;
+}
+
+.status-bar-top {
+  height: 3px;
+}
+
+/* 头部 */
+.card-header {
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 14px 6px 14px;
+}
+
+.platform-icon {
+  font-size: 20px;
+  margin-right: 6px;
+}
+
+.platform-name {
+  font-size: 16px;
+  color: #FFFFFF;
+  font-weight: bold;
+  flex: 1;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* 卡片主体 */
+.card-body {
+  padding: 4px 14px 8px 14px;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Token 用量模式 */
+.big-percent {
+  font-size: 42px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.progress-bg {
+  width: 100%;
+  height: 6px;
+  background-color: #3A3A3A;
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.usage-row {
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.usage-item {
+  align-items: center;
+  flex: 1;
+}
+
+.usage-label {
+  font-size: 11px;
+  color: #888888;
+  margin-bottom: 2px;
+}
+
+.usage-value {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+
+/* 货币余额模式 */
+.big-balance {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.balance-label-text {
+  font-size: 12px;
+  color: #888888;
+  margin-bottom: 8px;
+}
+
+.period-text {
+  font-size: 11px;
+  color: #666666;
+  margin-top: 4px;
+}
+
+/* 限额窗口模式 */
+.quota-subtitle {
+  font-size: 12px;
+  color: #888888;
+  margin-bottom: 8px;
+}
+
+.quota-item {
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.quota-label {
+  font-size: 12px;
+  color: #888888;
+  width: 24px;
+}
+
+.quota-bar-bg {
+  flex: 1;
+  height: 6px;
+  background-color: #3A3A3A;
+  border-radius: 3px;
+  margin: 0 8px;
+}
+
+.quota-bar-fill {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.quota-pct {
+  font-size: 12px;
+  color: #FFFFFF;
+  width: 36px;
+  text-align: right;
+}
+
+/* 底部 */
+.card-footer {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px 10px 14px;
+  border-top-width: 1px;
+  border-top-color: #333333;
+}
+
+.status-label {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.update-time {
+  font-size: 11px;
+  color: #666666;
+}
+</style>
+
+<script>
+export default {
+  props: {
+    data: { type: Object, default: null },
+    isFocused: { type: Boolean, default: false }
+  },
+
+  computed: {
+    // ===== 基础属性 =====
+    icon() { return this.data?.icon ?? '❓' },
+    name() { return this.data?.displayName ?? '--' },
+    statusColor() { return this.data?.statusColor ?? '#B0B0B0' },
+    statusText() { return this.data?.statusText ?? '未知' },
+    displayMode() { return this.data?.displayMode ?? 'token_usage' },
+
+    // ===== Token 用量 =====
+    usagePercent() { return this.data?.usagePercent ?? 0 },
+    tokensUsedFormatted() { return this.data?.tokensUsedFormatted ?? '--' },
+    tokensLimitFormatted() { return this.data?.tokensLimitFormatted ?? '--' },
+    tokensRemainingFormatted() { return this.data?.tokensRemainingFormatted ?? '--' },
+
+    // ===== 货币余额 =====
+    balanceText() { return this.data?.balanceText ?? 'N/A' },
+    periodText() { return this.data?.periodText ?? '' },
+
+    // ===== 限额窗口 =====
+    hasDaily() { return this.data?.dailyLimit != null },
+    hasWeekly() { return this.data?.weeklyLimit != null },
+    hasMonthly() { return this.data?.monthlyLimit != null },
+    dailyPercent() {
+      if (!this.data?.dailyLimit) return 0
+      return Math.min(100, Math.round(((this.data.dailyUsed || 0) / this.data.dailyLimit) * 100))
+    },
+    weeklyPercent() {
+      if (!this.data?.weeklyLimit) return 0
+      return Math.min(100, Math.round(((this.data.weeklyUsed || 0) / this.data.weeklyLimit) * 100))
+    },
+    monthlyPercent() {
+      if (!this.data?.monthlyLimit) return 0
+      return Math.min(100, Math.round(((this.data.monthlyUsed || 0) / this.data.monthlyLimit) * 100))
+    },
+
+    // ===== 更新时间 =====
+    updatedAtFormatted() {
+      const ts = this.data?.updatedAt
+      if (!ts) return ''
+      const diff = Date.now() - ts
+      const mins = Math.floor(diff / 60000)
+      if (mins < 1) return '刚刚'
+      if (mins < 60) return mins + '分钟前'
+      const hrs = Math.floor(mins / 60)
+      if (hrs < 24) return hrs + '小时前'
+      return Math.floor(hrs / 24) + '天前'
+    }
+  }
+}
+</script>
