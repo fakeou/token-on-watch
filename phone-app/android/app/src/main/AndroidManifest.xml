@@ -12,9 +12,22 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- 查询穿戴互联相关包（用于动态加载 IPC SDK） -->
+    <queries>
+        <package android:name="com.mi.health" />
+        <package android:name="com.xiaomi.wearable" />
+        <intent>
+            <action android:name="com.xiaomi.wearable.XMS_WEARABLE_SERVICE" />
+        </intent>
+        <package android:name="com.xiaomi.mi_connect" />
+        <package android:name="com.xiaomi.mi_connect_service" />
+        <package android:name="com.xiaomi.health" />
+        <package android:name="com.mi.health.global" />
+    </queries>
+
     <application
         android:label="Token Monitor"
-        android:name="${applicationName}"
+        android:name=".TokenMonitorApp"
         android:icon="@mipmap/ic_launcher">
 
         <activity

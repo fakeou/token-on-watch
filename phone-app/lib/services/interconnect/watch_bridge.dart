@@ -135,6 +135,24 @@ class WatchBridge {
     }
   }
 
+  /// 请求手机侧刷新穿戴节点、权限和监听状态
+  Future<void> refreshConnection() async {
+    try {
+      await _channel.invokeMethod('refreshConnection');
+    } on MissingPluginException {
+      // Platform Channel 未注册（可能在测试环境）
+    }
+  }
+
+  /// 请求启动手表快应用
+  Future<void> launchWatchApp() async {
+    try {
+      await _channel.invokeMethod('launchWatchApp');
+    } on MissingPluginException {
+      // Platform Channel 未注册（可能在测试环境）
+    }
+  }
+
   /// 获取连接诊断信息
   Future<Map<String, dynamic>> diagnose() async {
     try {

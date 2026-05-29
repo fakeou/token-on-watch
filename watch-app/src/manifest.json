@@ -6,6 +6,7 @@
   "minAPILevel": 1,
   "icon": "/common/icon.png",
   "features": [
+    { "name": "system.router" },
     { "name": "system.interconnect" },
     { "name": "system.storage" }
   ],

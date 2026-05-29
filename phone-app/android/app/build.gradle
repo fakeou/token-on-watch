@@ -48,7 +48,19 @@ android {
         versionName flutterVersionName
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("keystore/tokenmonitor-debug.jks")
+            storePassword "android"
+            keyAlias "tokenmonitor"
+            keyPassword "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             signingConfig signingConfigs.debug
         }
@@ -59,4 +71,8 @@ flutter {
     source "../.."
 }
 
-dependencies {}
+dependencies {
+    // 小米 XMS Wearable SDK：对应 Vela 快应用 @system.interconnect。
+    implementation files('libs/xms-wearable-lib_1.4_release.aar')
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
